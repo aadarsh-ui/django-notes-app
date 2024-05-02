@@ -9,7 +9,7 @@ This is a simple notes app built with React and Django.
 ## Installation
 1. Clone the repository
 ```
-git clone https://github.com/LondheShubham153/django-notes-app.git
+git clone <url>
 ```
 
 2. Build the app
@@ -28,3 +28,6 @@ Install Nginx reverse proxy to make this application available
 
 `sudo apt-get update`
 `sudo apt install nginx`
+
+## Reference to How to push docker image to DockerHub using Jenkins
+https://iot4beginners.com/how-to-push-a-docker-image-to-the-docker-hub-using-jenkins-pipeline-2022-ci-cd/
