@@ -26,25 +26,26 @@ pipeline {
             steps {
                 //sonar is name of sonarqube server name inside manage jenkins>system
                 withSonarQubeEnv("sonar"){
-                    sh '$SONAR_HOME/bin/sonar-scanner -Dsonar.projectName=nodetodo -Dsonar.projectKey=nodetodo'
+                    sh '$SONAR_HOME/bin/sonar-scanner -Dsonar.projectName=nodetodo -Dsonar.projectKey=nodetodo -X'
                 }
             }
         }
-   //   stage('SonarQube Quality Gates') {
-       //     steps {
-                //timeout(time: 5, unit: "MINUTES"){
-                  //  waitForQualityGate abortPipeline: false //true when developer writes code :)
-         //       }
-           // }
-        //}
+    //    stage('SonarQube Quality Gates') {
+    //        steps {
+    //            timeout(time: 45, unit: "MINUTES"){
+    //              waitForQualityGate abortPipeline: false //true when developer writes code :)
+    //            }
+    //        }
+    //    }
+        stage('Trivy Image Scanner') {
+            steps {
+                echo 'Scanning the Build Artifact: Only do this when you have enough space else face error'
+    //            sh 'trivy image note-taking-app'
+            }
+        }
         stage('OWASP') {
             steps {
                 echo 'Vulenerability checking in the app'
-            }
-        }
-        stage('Trivy Scanner') {
-            steps {
-                echo 'Scanning the Build Artifact'
             }
         }
         stage('Push to Docker Hub') {
@@ -57,8 +58,6 @@ pipeline {
         }
     }
 }
-
-
         stage('Deploy') {
             steps {
                 echo 'Deployed the app'
