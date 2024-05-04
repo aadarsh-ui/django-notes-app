@@ -15,14 +15,7 @@ pipeline {
                 git credentialsId: env.GIT_CREDENTIALS_ID, url: 'https://github.com/aadarsh-ui/django-notes-app.git', branch: 'main'
             }
         }
-        stage('Build & Test') {
-            steps {
-                echo 'Building the app'
-                sh 'docker --version'
-                sh 'docker build -t note-taking-app .'
-            }
-        }
-        stage('SonarQube Analysis') {
+         stage('SonarQube Analysis') {
             steps {
                 //sonar is name of sonarqube server name inside manage jenkins>system
                 withSonarQubeEnv("sonar"){
@@ -30,25 +23,34 @@ pipeline {
                 }
             }
         }
-    //    stage('SonarQube Quality Gates') {
+    //   stage('SonarQube Quality Gates') {
     //        steps {
     //            timeout(time: 45, unit: "MINUTES"){
     //              waitForQualityGate abortPipeline: false //true when developer writes code :)
     //            }
     //        }
     //    }
-        stage('Trivy Image Scanner') {
+         stage('OWASP') {
+            steps {
+                echo 'Vulenerability checking in the app dependencies'
+                dependencyCheck additionalArguments: '--scan ./', odcInstallation: 'OWASP'
+                dependencyCheckPublisher pattern: '**/owasp-dependency-check-report.xml'
+            }
+        }
+         stage('Build & Test') {
+            steps {
+                echo 'Building the app'
+                sh 'docker --version'
+                sh 'docker build -t note-taking-app .'
+            }
+        }
+         stage('Trivy Image Scanner') {
             steps {
                 echo 'Scanning the Build Artifact: Only do this when you have enough space else face error'
     //            sh 'trivy image note-taking-app'
             }
         }
-        stage('OWASP') {
-            steps {
-                echo 'Vulenerability checking in the app'
-            }
-        }
-        stage('Push to Docker Hub') {
+         stage('Push to Docker Hub') {
             steps {
                 echo 'Pushing to docker hub the app'
                 withCredentials([usernamePassword(credentialsId:"dockerHub", usernameVariable:"dockerHubUser", passwordVariable:"dockerHubPass")]) {
@@ -58,7 +60,7 @@ pipeline {
         }
     }
 }
-        stage('Deploy') {
+         stage('Deploy') {
             steps {
                 echo 'Deployed the app'
                 sh "docker-compose down && docker-compose up -d --build"
