@@ -54,7 +54,7 @@ pipeline {
             steps {
                 echo 'Pushing to docker hub the app'
                 withCredentials([usernamePassword(credentialsId:"dockerHub", usernameVariable:"dockerHubUser", passwordVariable:"dockerHubPass")]) {
-                    //sh "docker login -u $dockerHubUser --password-stdin <<< $dockerHubPass"
+    //              sh "docker login -u $dockerHubUser --password-stdin <<< $dockerHubPass" //removed login bcoz did docker login on terminal and no need for this login now
                     sh "docker tag note-taking-app $dockerHubUser/note-taking-app:latest"
                     sh "docker push $dockerHubUser/note-taking-app:latest"
         }
