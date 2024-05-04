@@ -1,11 +1,17 @@
 pipeline {
-    agent any
+    agent {
+    label 'vm-slave'
+    }
+    environment {
+        // Defining the credentials ID for accessing the Git repository
+        GIT_CREDENTIALS_ID = 'githubCred'
+    }
 
     stages {
          stage('Cloning') {
             steps {
                 echo 'Cloning the app'
-                git url: 'https://github.com/aadarsh-ui/django-notes-app.git', branch: 'main'
+                git credentialsId: env.GIT_CREDENTIALS_ID, url: 'https://github.com/aadarsh-ui/django-notes-app.git', branch: 'main'
             }
         }
         stage('Build') {
@@ -38,15 +44,19 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 echo 'Pushing to docker hub the app'
-                withCredentials([usernamePassword(credentialsId:"dockerHub", usernameVariable:"dockerHubUser", passwordVariable:"dockerHubPass")])
-                sh 'docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}'
-                sh 'docker tag note-taking-app ${env.dockerHubUser}/note-taking-app:latest'
-                sh 'docker push ${env.dockerHubUser}/note-taking-app:latest'
-            }
+                withCredentials([usernamePassword(credentialsId:"dockerHub", usernameVariable:"dockerHubUser", passwordVariable:"dockerHubPass")]) {
+                    sh "echo $dockerHubPass | docker login -u $dockerHubUser --password-stdin"
+                    sh "docker tag note-taking-app $dockerHubUser/note-taking-app:latest"
+                    sh "docker push $dockerHubUser/note-taking-app:latest"
         }
+    }
+}
+
+
         stage('Deploy') {
             steps {
                 echo 'Deployed the app'
+                sh "docker-compose down && docker-compose up -d --build"
             }
         }
     }
