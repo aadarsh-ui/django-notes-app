@@ -5,32 +5,38 @@ pipeline {
     environment {
         // Defining the credentials ID for accessing the Git repository
         GIT_CREDENTIALS_ID = 'githubCred'
+        SONAR_HOME = tool "sonarScanner"
     }
 
     stages {
-         stage('Cloning') {
+         stage('Clone') {
             steps {
                 echo 'Cloning the app'
                 git credentialsId: env.GIT_CREDENTIALS_ID, url: 'https://github.com/aadarsh-ui/django-notes-app.git', branch: 'main'
             }
         }
-        stage('Build') {
+        stage('Build & Test') {
             steps {
                 echo 'Building the app'
                 sh 'docker --version'
                 sh 'docker build -t note-taking-app .'
             }
         }
-        stage('Test') {
+        stage('SonarQube Analysis') {
             steps {
-                echo 'Testing the app'
+                //sonar is name of sonarqube server name inside manage jenkins>system
+                withSonarQubeEnv("sonar"){
+                    sh '$SONAR_HOME/bin/sonar-scanner -Dsonar.projectName=nodetodo -Dsonar.projectKey=nodetodo'
+                }
             }
         }
-        stage('SonarQube') {
-            steps {
-                echo 'Code Quality Checking'
-            }
-        }
+   //   stage('SonarQube Quality Gates') {
+       //     steps {
+                //timeout(time: 5, unit: "MINUTES"){
+                  //  waitForQualityGate abortPipeline: false //true when developer writes code :)
+         //       }
+           // }
+        //}
         stage('OWASP') {
             steps {
                 echo 'Vulenerability checking in the app'
